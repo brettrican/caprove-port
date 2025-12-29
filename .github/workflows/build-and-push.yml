@@ -58,5 +58,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./dockerfile-captain.release
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
