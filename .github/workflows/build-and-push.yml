@@ -34,9 +34,12 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend-src
-          # Upgrade Redux to version 5.x to fix dependency conflicts
+          # Clear npm cache and use force install to resolve dependency conflicts
+          npm cache clean --force
+          # Install specific compatible versions to avoid ajv conflicts
+          npm install --force --legacy-peer-deps
+          # Ensure Redux 5.x compatibility
           npm install redux@^5.0.0 redux-thunk@^3.1.0 --legacy-peer-deps
-          npm install --legacy-peer-deps
           npm run build
           cd ..
           rm -rf ./public/*
