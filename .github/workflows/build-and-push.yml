@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout Frontend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: brettrican/caprover-frontend-port
           path: frontend-src
@@ -34,7 +34,9 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend-src
-          npm install
+          # Upgrade Redux to version 5.x to fix dependency conflicts
+          npm install redux@^5.0.0 redux-thunk@^3.1.0 --legacy-peer-deps
+          npm install --legacy-peer-deps
           npm run build
           cd ..
           rm -rf ./public/*
