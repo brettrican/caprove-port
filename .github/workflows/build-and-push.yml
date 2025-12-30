@@ -21,10 +21,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout Frontend
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: brettrican/caprover-frontend-port
           path: frontend-src
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,16 +35,10 @@ jobs:
       - name: Build Frontend
         run: |
           cd frontend-src
-          # Remove node_modules and package-lock.json to start fresh
-          rm -rf node_modules package-lock.json
-          # Add ajv as direct dependency (ajv v8 for ajv-keywords v5)
-          npm install ajv@^8.0.0 ajv-keywords@^5.0.0 --legacy-peer-deps
-          # Install Redux 5.x with compatible versions
-          npm install redux@^5.0.0 redux-thunk@^3.1.0 --legacy-peer-deps
-          # Reinstall all dependencies
           npm install --legacy-peer-deps
           npm run build
           cd ..
+          mkdir -p ./public
           rm -rf ./public/*
           cp -r ./frontend-src/build/* ./public/
 
@@ -51,13 +46,14 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: brettrican
+          password: ${{ secrets.GH_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
+          # Using the standard Dockerfile if it exists, or the release one
           file: ./dockerfile-captain.release
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
