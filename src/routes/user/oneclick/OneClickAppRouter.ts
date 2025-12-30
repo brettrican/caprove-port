@@ -31,9 +31,6 @@ interface IOneClickAppIdentifier {
     description: string
     logoUrl: string
 }
-
-router.post('/repositories/insert', function (req, res, next) {
-
 router.post('/check-conflicts', function (req, res, next) {
     const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
     const checker = new PortConflictChecker(dataStore.getAppsDataStore());
@@ -64,6 +61,8 @@ router.get('/next-available-port/:port', function (req, res, next) {
         .catch(next);
 });
 
+
+router.post('/repositories/insert', function (req, res, next) {
     const dataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
     let apiBaseUrl = `${req.body.repositoryUrl || ''}`
@@ -454,4 +453,3 @@ export function reportAnalyticsOnAppDeploy(
         )
     )
 }
-// Triggering build after frontend fix
