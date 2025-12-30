@@ -1,3 +1,4 @@
+import PortConflictChecker from '../../../user/oneclick/PortConflictChecker'
 import express = require('express')
 import axios from 'axios'
 import ApiStatusCodes from '../../../api/ApiStatusCodes'
@@ -32,6 +33,34 @@ interface IOneClickAppIdentifier {
 }
 
 router.post('/repositories/insert', function (req, res, next) {
+
+router.post('/check-conflicts', function (req, res, next) {
+    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
+    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
+
+    checker.checkConflicts(req.body.renderedServices)
+        .then(conflicts => {
+            res.send({
+                status: ApiStatusCodes.STATUS_OK,
+                description: 'Conflict check complete',
+                data: { conflicts }
+            });
+        })
+        .catch(next);
+});
+
+router.get('/next-available-port/:port', function (req, res, next) {
+    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
+    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
+    const nextPort = checker.findNextAvailablePort(parseInt(req.params.port));
+
+    res.send({
+        status: ApiStatusCodes.STATUS_OK,
+        description: 'Next available port found',
+        data: { nextPort }
+    });
+});
+
     const dataStore =
         InjectionExtractor.extractUserFromInjected(res).user.dataStore
     let apiBaseUrl = `${req.body.repositoryUrl || ''}`
