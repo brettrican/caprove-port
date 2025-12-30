@@ -1,4 +1,4 @@
-import PortConflictChecker from '../../../user/oneclick/PortConflictChecker'
+import PortConflictChecker from "../../../user/oneclick/PortConflictChecker"
 import express = require('express')
 import axios from 'axios'
 import ApiStatusCodes from '../../../api/ApiStatusCodes'
@@ -31,36 +31,6 @@ interface IOneClickAppIdentifier {
     description: string
     logoUrl: string
 }
-router.post('/check-conflicts', function (req, res, next) {
-    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
-    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
-
-    checker.checkConflicts(req.body.renderedServices)
-        .then(conflicts => {
-            res.send({
-                status: ApiStatusCodes.STATUS_OK,
-                description: 'Conflict check complete',
-                data: { conflicts }
-            });
-        })
-        .catch(next);
-});
-
-router.get('/next-available-port/:port', function (req, res, next) {
-    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
-    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
-
-    checker.findNextAvailablePort(parseInt(req.params.port))
-        .then(nextPort => {
-            res.send({
-                status: ApiStatusCodes.STATUS_OK,
-                description: 'Next available port found',
-                data: { nextPort }
-            });
-        })
-        .catch(next);
-});
-
 
 router.post('/repositories/insert', function (req, res, next) {
     const dataStore =
@@ -398,6 +368,37 @@ router.get('/deploy/progress', function (req, res, next) {
         })
         .catch(ApiStatusCodes.createCatcher(res))
 })
+
+
+router.post("/check-conflicts", function (req, res, next) {
+    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
+    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
+
+    checker.checkConflicts(req.body.renderedServices)
+        .then((conflicts) => {
+            res.send({
+                status: ApiStatusCodes.STATUS_OK,
+                description: "Conflict check complete",
+                data: { conflicts },
+            });
+        })
+        .catch(next);
+});
+
+router.get("/next-available-port/:port", function (req, res, next) {
+    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
+    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
+
+    checker.findNextAvailablePort(parseInt(req.params.port))
+        .then((nextPort) => {
+            res.send({
+                status: ApiStatusCodes.STATUS_OK,
+                description: "Next available port found",
+                data: { nextPort },
+            });
+        })
+        .catch(next);
+});
 
 export default router
 
