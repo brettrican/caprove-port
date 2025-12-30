@@ -52,13 +52,16 @@ router.post('/check-conflicts', function (req, res, next) {
 router.get('/next-available-port/:port', function (req, res, next) {
     const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
     const checker = new PortConflictChecker(dataStore.getAppsDataStore());
-    const nextPort = checker.findNextAvailablePort(parseInt(req.params.port));
 
-    res.send({
-        status: ApiStatusCodes.STATUS_OK,
-        description: 'Next available port found',
-        data: { nextPort }
-    });
+    checker.findNextAvailablePort(parseInt(req.params.port))
+        .then(nextPort => {
+            res.send({
+                status: ApiStatusCodes.STATUS_OK,
+                description: 'Next available port found',
+                data: { nextPort }
+            });
+        })
+        .catch(next);
 });
 
     const dataStore =
