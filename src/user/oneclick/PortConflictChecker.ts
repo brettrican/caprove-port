@@ -10,13 +10,13 @@ export default class PortConflictChecker {
     constructor(private appsDataStore: AppsDataStore) {}
 
     async checkConflicts(renderedServices: any): Promise<IPortConflict[]> {
-        const allApps = this.appsDataStore.getAllAppDefinitions();
+        const allApps = await this.appsDataStore.getAppDefinitions();
         const occupiedPorts: { [port: number]: string } = {};
 
         Object.keys(allApps).forEach((appName) => {
             const app = allApps[appName];
             if (app.ports) {
-                app.ports.forEach((p) => {
+                app.ports.forEach((p: any) => {
                     if (p.hostPort) {
                         occupiedPorts[p.hostPort] = appName;
                     }
@@ -47,14 +47,14 @@ export default class PortConflictChecker {
         return conflicts;
     }
 
-    findNextAvailablePort(startPort: number): number {
-        const allApps = this.appsDataStore.getAllAppDefinitions();
+    async findNextAvailablePort(startPort: number): Promise<number> {
+        const allApps = await this.appsDataStore.getAppDefinitions();
         const occupiedPorts = new Set<number>();
 
         Object.keys(allApps).forEach((appName) => {
             const app = allApps[appName];
             if (app.ports) {
-                app.ports.forEach((p) => {
+                app.ports.forEach((p: any) => {
                     if (p.hostPort) occupiedPorts.add(p.hostPort);
                 });
             }
