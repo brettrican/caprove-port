@@ -3,7 +3,9 @@ RUN apk add --update --no-cache make gcc g++ git curl openssl openssh
 
 WORKDIR /usr/src/app
 COPY . ./ 
-RUN mkdir -p public
+
+# Ensure static directories exist
+RUN mkdir -p public dist-frontend
 
 # Build backend code
 RUN npm ci && \
