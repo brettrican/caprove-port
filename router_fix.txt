@@ -1,0 +1,14 @@
+router.get('/next-available-port/:port', function (req, res, next) {
+    const dataStore = InjectionExtractor.extractUserFromInjected(res).user.dataStore;
+    const checker = new PortConflictChecker(dataStore.getAppsDataStore());
+
+    checker.findNextAvailablePort(parseInt(req.params.port))
+        .then(nextPort => {
+            res.send({
+                status: ApiStatusCodes.STATUS_OK,
+                description: 'Next available port found',
+                data: { nextPort }
+            });
+        })
+        .catch(next);
+});
