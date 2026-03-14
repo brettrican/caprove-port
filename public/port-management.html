@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CapRover - Port Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .port-row:hover { transform: translateX(4px); }
+        .port-row { transition: all 0.2s ease; }
+        .status-open { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .status-closed { background: linear-gradient(135deg, #6b7280 0%, #374151 100%); }
+        .status-conflict { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white">
+    <!-- Header -->
+    <header class="glass-effect shadow-xl">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="layers" class="w-8 h-8 text-purple-400"></i>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                        CapRover Port Management
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="refreshData()" class="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-200 hover:scale-105">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <button onclick="openSettings()" class="p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-effect rounded-xl p-6 hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Ports</p>
+                        <p class="text-3xl font-bold" id="totalPorts">65,535</p>
+                    </div>
+                    <div class="p-3 bg-blue-500/20 rounded-lg">
+                        <i data-lucide="globe" class="w-6 h-6 text-blue-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Used Ports</p>
+                        <p class="text-3xl font-bold text-green-400" id="usedPorts">0</p>
+                    </div>
+                    <div class="p-3 bg-green-500/20 rounded-lg">
+                        <i data-lucide="activity" class="w-6 h-6 text-green-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Available Ports</p>
+                        <p class="text-3xl font-bold text-blue-400" id="availablePorts">65,535</p>
+                    </div>
+                    <div class="p-3 bg-blue-500/20 rounded-lg">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-blue-400"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-effect rounded-xl p-6 hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Container Ports</p>
+                        <p class="text-3xl font-bold text-purple-400" id="containerPorts">0</p>
+                    </div>
+                    <div class="p-3 bg-purple-500/20 rounded-lg">
+                        <i data-lucide="package" class="w-6 h-6 text-purple-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Port Suggestion Section -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i data-lucide="zap" class="w-5 h-5 mr-2 text-yellow-400"></i>
+                    Smart Port Suggestions
+                </h2>
+                <button onclick="getPortSuggestions()" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg transition-all duration-200 hover:scale-105">
+                    Get Suggestions
+                </button>
+            </div>
+            <div id="portSuggestions" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Suggestions will be populated here -->
+            </div>
+        </div>
+
+        <!-- Port Scanner -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i data-lucide="radar" class="w-5 h-5 mr-2 text-blue-400"></i>
+                    Port Scanner
+                </h2>
+                <button onclick="scanPorts()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 hover:scale-105">
+                    Scan Ports
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <input type="number" id="portRangeStart" placeholder="Start Port" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-blue-400 focus:bg-white/20">
+                <input type="number" id="portRangeEnd" placeholder="End Port" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-blue-400 focus:bg-white/20">
+                <select id="protocol" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-blue-400">
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                    <option value="both">Both</option>
+                </select>
+                <button onclick="scanPorts()" class="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg transition-all duration-200">
+                    Start Scan
+                </button>
+            </div>
+        </div>
+
+        <!-- Port Table -->
+        <div class="glass-effect rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i data-lucide="list" class="w-5 h-5 mr-2 text-green-400"></i>
+                    Active Ports
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="searchPorts" placeholder="Search ports..." onkeyup="filterPorts()" class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-blue-400">
+                    <select id="filterType" onchange="filterPorts()" class="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-blue-400">
+                        <option value="all">All</option>
+                        <option value="container">Containers</option>
+                        <option value="process">Processes</option>
+                        <option value="system">System</option>
+                    </select>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-3 px-4">Port</th>
+                            <th class="text-left py-3 px-4">Protocol</th>
+                            <th class="text-left py-3 px-4">State</th>
+                            <th class="text-left py-3 px-4">Type</th>
+                            <th class="text-left py-3 px-4">Name</th>
+                            <th class="text-left py-3 px-4">User</th>
+                            <th class="text-left py-3 px-4">CPU</th>
+                            <th class="text-left py-3 px-4">Memory</th>
+                            <th class="text-left py-3 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portTableBody">
+                        <!-- Port data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noDataMessage" class="text-center py-8 hidden">
+                <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 text-gray-500"></i>
+                <p class="text-gray-400">No port data available. Click "Scan Ports" to discover active ports.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="glass-effect rounded-xl p-8 flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+            <p class="text-lg">Scanning ports...</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let currentPorts = [];
+        let filteredPorts = [];
+
+        // API base URL
+        const API_BASE = '/api/v1/user/ports';
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+        });
+
+        async function refreshData() {
+            await Promise.all([
+                loadPortStats(),
+                scanPorts()
+            ]);
+        }
+
+        async function loadPortStats() {
+            try {
+                showLoading();
+                const response = await axios.get(`${API_BASE}/stats`);
+                const stats = response.data.data.stats;
+                
+                document.getElementById('totalPorts').textContent = stats.totalPorts.toLocaleString();
+                document.getElementById('usedPorts').textContent = stats.usedPorts.toLocaleString();
+                document.getElementById('availablePorts').textContent = stats.availablePorts.toLocaleString();
+                document.getElementById('containerPorts').textContent = stats.containerPorts.toLocaleString();
+            } catch (error) {
+                console.error('Error loading port stats:', error);
+                showNotification('Error loading port statistics', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function scanPorts() {
+            try {
+                showLoading();
+                const startPort = document.getElementById('portRangeStart').value || 1;
+                const endPort = document.getElementById('portRangeEnd').value || 1000;
+                const protocol = document.getElementById('protocol').value;
+                
+                const protocols = protocol === 'both' ? ['tcp', 'udp'] : [protocol];
+                
+                const response = await axios.get(`${API_BASE}/scan`, {
+                    params: {
+                        start: startPort,
+                        end: endPort,
+                        protocols: protocols.join(',')
+                    }
+                });
+                
+                currentPorts = response.data.data.ports;
+                filteredPorts = [...currentPorts];
+                renderPortTable();
+            } catch (error) {
+                console.error('Error scanning ports:', error);
+                showNotification('Error scanning ports', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function getPortSuggestions() {
+            try {
+                showLoading();
+                const response = await axios.get(`${API_BASE}/suggest`, {
+                    params: {
+                        count: 6,
+                        start: 3000,
+                        end: 9000
+                    }
+                });
+                
+                const suggestions = response.data.data.suggestions;
+                renderSuggestions(suggestions);
+            } catch (error) {
+                console.error('Error getting port suggestions:', error);
+                showNotification('Error getting port suggestions', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderSuggestions(suggestions) {
+            const container = document.getElementById('portSuggestions');
+            container.innerHTML = suggestions.map(suggestion => `
+                <div class="glass-effect rounded-lg p-4 hover:scale-105 transition-all duration-300 cursor-pointer" onclick="selectPort(${suggestion.port})">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-2xl font-bold text-blue-400">${suggestion.port}</span>
+                        <span class="px-2 py-1 bg-${suggestion.confidence === 'high' ? 'green' : suggestion.confidence === 'medium' ? 'yellow' : 'gray'}-500/20 text-${suggestion.confidence === 'high' ? 'green' : suggestion.confidence === 'medium' ? 'yellow' : 'gray'}-400 rounded text-xs">
+                            ${suggestion.confidence.toUpperCase()}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-400">${suggestion.reason}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderPortTable() {
+            const tbody = document.getElementById('portTableBody');
+            const noDataMessage = document.getElementById('noDataMessage');
+            
+            if (filteredPorts.length === 0) {
+                tbody.innerHTML = '';
+                noDataMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noDataMessage.classList.add('hidden');
+            tbody.innerHTML = filteredPorts.map(port => {
+                const isContainer = !!port.container;
+                const isProcess = !!port.process;
+                const entity = isContainer ? port.container : port.process;
+                
+                return `
+                    <tr class="border-b border-white/10 hover:bg-white/5 port-row">
+                        <td class="py-3 px-4">
+                            <span class="font-mono font-bold text-blue-400">${port.port}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs uppercase">${port.protocol}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 bg-${port.state === 'open' ? 'green' : 'red'}-500/20 text-${port.state === 'open' ? 'green' : 'red'}-400 rounded text-xs uppercase">${port.state}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 bg-${isContainer ? 'purple' : isProcess ? 'blue' : 'gray'}-500/20 text-${isContainer ? 'purple' : isProcess ? 'blue' : 'gray'}-400 rounded text-xs">
+                                ${isContainer ? 'Container' : isProcess ? 'Process' : 'System'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center">
+                                <span class="mr-2">${entity.name || 'Unknown'}</span>
+                                ${entity.appName ? `<span class="px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">${entity.appName}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">${entity.user || 'N/A'}</td>
+                        <td class="py-3 px-4">${entity.cpu ? entity.cpu.toFixed(1) + '%' : 'N/A'}</td>
+                        <td class="py-3 px-4">${entity.memory ? entity.memory.toFixed(1) + '%' : 'N/A'}</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center space-x-2">
+                                ${isProcess ? `<button onclick="killProcess(${entity.pid})" class="p-1 bg-red-500/20 hover:bg-red-500/30 rounded transition-colors" title="Kill Process">
+                                    <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
+                                </button>` : ''}
+                                ${isContainer ? `<button onclick="stopContainer('${entity.id}')" class="p-1 bg-orange-500/20 hover:bg-orange-500/30 rounded transition-colors" title="Stop Container">
+                                    <i data-lucide="square" class="w-4 h-4 text-orange-400"></i>
+                                </button>` : ''}
+                                <button onclick="checkConflict(${port.port}, '${port.protocol}')" class="p-1 bg-blue-500/20 hover:bg-blue-500/30 rounded transition-colors" title="Check Conflict">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 text-blue-400"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Re-initialize Lucide icons for dynamically added content
+            lucide.createIcons();
+        }
+
+        function filterPorts() {
+            const searchTerm = document.getElementById('searchPorts').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+            
+            filteredPorts = currentPorts.filter(port => {
+                const matchesSearch = !searchTerm || 
+                    port.port.toString().includes(searchTerm) ||
+                    (port.container && port.container.name.toLowerCase().includes(searchTerm)) ||
+                    (port.process && port.process.name.toLowerCase().includes(searchTerm));
+                
+                const matchesType = filterType === 'all' ||
+                    (filterType === 'container' && port.container) ||
+                    (filterType === 'process' && port.process) ||
+                    (filterType === 'system' && !port.container && !port.process);
+                
+                return matchesSearch && matchesType;
+            });
+            
+            renderPortTable();
+        }
+
+        async function killProcess(pid) {
+            if (!confirm(`Are you sure you want to kill process ${pid}?`)) return;
+            
+            try {
+                await axios.post(`${API_BASE}/kill`, { pid });
+                showNotification(`Process ${pid} killed successfully`, 'success');
+                await scanPorts(); // Refresh the data
+            } catch (error) {
+                console.error('Error killing process:', error);
+                showNotification('Error killing process', 'error');
+            }
+        }
+
+        async function stopContainer(containerId) {
+            if (!confirm(`Are you sure you want to stop container ${containerId}?`)) return;
+            
+            try {
+                await axios.post(`${API_BASE}/stop-container`, { containerId });
+                showNotification(`Container ${containerId} stopped successfully`, 'success');
+                await scanPorts(); // Refresh the data
+            } catch (error) {
+                console.error('Error stopping container:', error);
+                showNotification('Error stopping container', 'error');
+            }
+        }
+
+        async function checkConflict(port, protocol) {
+            try {
+                const response = await axios.get(`${API_BASE}/conflict/${port}`, {
+                    params: { protocol }
+                });
+                
+                const conflict = response.data.data.conflict;
+                if (conflict) {
+                    alert(`Port Conflict Detected!\n\nPort: ${conflict.port}\nType: ${conflict.conflictType}\nEntity: ${conflict.conflictingEntity}\nSeverity: ${conflict.severity}\n\nSuggested Action: ${conflict.resolution.description}`);
+                } else {
+                    showNotification(`No conflicts detected for port ${port}`, 'success');
+                }
+            } catch (error) {
+                console.error('Error checking conflict:', error);
+                showNotification('Error checking port conflict', 'error');
+            }
+        }
+
+        function selectPort(port) {
+            // This could be used to auto-fill the port in a new app form
+            showNotification(`Port ${port} selected for new application`, 'success');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create a simple notification (you could replace this with a toast library)
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg glass-effect text-white z-50 animate-pulse-slow`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info'}" class="w-5 h-5 mr-2 text-${type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue'}-400"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function openSettings() {
+            showNotification('Settings panel coming soon!', 'info');
+        }
+    </script>
+</body>
+</html>

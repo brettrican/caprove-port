@@ -3,17 +3,18 @@ import ApiStatusCodes from '../../api/ApiStatusCodes'
 import BaseApi from '../../api/BaseApi'
 import InjectionExtractor from '../../injection/InjectionExtractor'
 import * as Injector from '../../injection/Injector'
+import { IHashMapGeneric } from '../../models/ICacheGeneric'
 import Authenticator from '../../user/Authenticator'
 import EnvVars from '../../utils/EnvVars'
 import Utils from '../../utils/Utils'
-import AppsRouter from './apps/AppsRouter'
-import OneClickAppRouter from './oneclick/OneClickAppRouter'
-import ProRouter from './pro/ProRouter'
 import ProjectsRouter from './ProjectsRouter'
 import RegistriesRouter from './registeries/RegistriesRouter'
 import SystemRouter from './system/SystemRouter'
 import onFinished = require('on-finished')
-import { IHashMapGeneric } from '../../models/ICacheGeneric'
+import AppsRouter from './apps/AppsRouter'
+import OneClickAppRouter from './oneclick/OneClickAppRouter'
+import PortRouter from './ports/PortRouter'
+import ProRouter from './pro/ProRouter'
 
 const router = express.Router()
 
@@ -125,6 +126,8 @@ router.post('/changepassword/', function (req, res, next) {
 })
 
 router.use('/apps/', AppsRouter)
+
+router.use('/ports/', PortRouter)
 
 router.use('/projects/', ProjectsRouter)
 
