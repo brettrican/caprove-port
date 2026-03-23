@@ -1,13 +1,15 @@
 import express = require('express')
 import ApiStatusCodes from '../../../api/ApiStatusCodes'
 import BaseApi from '../../../api/BaseApi'
-import getPortManagerSingleton from '../../../user/PortManagerSingleton'
+import DockerApi from '../../../docker/DockerApi'
+import PortManager from '../../../user/PortManager'
 
 const router = express.Router()
 
 // Get all port information
 router.get('/scan', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    // Create PortManager instance
+    const portManager = new PortManager(DockerApi.get())
 
     const options: any = {
         portRange: req.query.portRange
@@ -28,7 +30,7 @@ router.get('/scan', function (req, res, next) {
         includeSystemProcesses: req.query.includeSystemProcesses !== 'false',
         timeout: req.query.timeout
             ? parseInt(req.query.timeout as string)
-            : 5000,
+            : 1000,
     }
 
     return portManager
@@ -46,7 +48,7 @@ router.get('/scan', function (req, res, next) {
 
 // Get port management statistics
 router.get('/stats', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
 
     return portManager
         .getPortManagementStats()
@@ -63,7 +65,7 @@ router.get('/stats', function (req, res, next) {
 
 // Get port suggestions
 router.get('/suggest', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
 
     const count = parseInt(req.query.count as string) || 1
     const preferredRange =
@@ -89,7 +91,7 @@ router.get('/suggest', function (req, res, next) {
 
 // Check for port conflicts
 router.get('/conflict/:port', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const port = parseInt(req.params.port)
     const protocol = (req.query.protocol as string) || 'tcp'
 
@@ -108,9 +110,9 @@ router.get('/conflict/:port', function (req, res, next) {
 
 // Kill a process
 router.post('/kill', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const pid = req.body.pid
-    const signal = req.body.signal || 15
+    const signal = req.body.signal || 9
 
     if (!pid) {
         const response = new BaseApi(
@@ -135,7 +137,7 @@ router.post('/kill', function (req, res, next) {
 
 // Stop a container
 router.post('/stop-container', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const containerId = req.body.containerId
 
     if (!containerId) {
@@ -161,7 +163,7 @@ router.post('/stop-container', function (req, res, next) {
 
 // Get containers by port
 router.get('/containers/:port', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const port = parseInt(req.params.port)
 
     return portManager
@@ -179,7 +181,7 @@ router.get('/containers/:port', function (req, res, next) {
 
 // Get port suggestions for new app
 router.get('/suggest-for-app', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const preferredPort = req.query.preferredPort
         ? parseInt(req.query.preferredPort as string)
         : undefined
@@ -196,11 +198,29 @@ router.get('/suggest-for-app', function (req, res, next) {
                 : undefined
         )
         .then(function (suggestions) {
+            // Check for preferred port conflict
+            const conflict = null
+            if (preferredPort) {
+                return portManager
+                    .checkPortConflict(preferredPort, 'tcp')
+                    .then(function (preferredConflict) {
+                        const baseApi = new BaseApi(
+                            ApiStatusCodes.STATUS_OK,
+                            'Port suggestions generated successfully'
+                        )
+                        baseApi.data = {
+                            suggestions,
+                            conflict: preferredConflict,
+                        }
+                        res.send(baseApi)
+                    })
+            }
+
             const baseApi = new BaseApi(
                 ApiStatusCodes.STATUS_OK,
                 'Port suggestions generated successfully'
             )
-            baseApi.data = { suggestions }
+            baseApi.data = { suggestions, conflict }
             res.send(baseApi)
         })
         .catch(ApiStatusCodes.createCatcher(res))
@@ -208,7 +228,7 @@ router.get('/suggest-for-app', function (req, res, next) {
 
 // Validate port for new app
 router.post('/validate', function (req, res, next) {
-    const portManager = getPortManagerSingleton()
+    const portManager = new PortManager(DockerApi.get())
     const port = req.body.port
     const protocol = (req.body.protocol as string) || 'tcp'
 
@@ -225,6 +245,7 @@ router.post('/validate', function (req, res, next) {
         .checkPortConflict(port, protocol as 'tcp' | 'udp')
         .then(function (conflict) {
             if (conflict) {
+                // Get alternative ports
                 return portManager
                     .suggestAvailablePorts(5, {
                         start: Math.max(3000, port - 50),
@@ -232,7 +253,7 @@ router.post('/validate', function (req, res, next) {
                     })
                     .then(function (alternatives) {
                         const baseApi = new BaseApi(
-                            ApiStatusCodes.STATUS_OK,
+                            ApiStatusCodes.STATUS_ERROR_GENERIC,
                             'Port conflict detected'
                         )
                         baseApi.data = {
@@ -242,14 +263,14 @@ router.post('/validate', function (req, res, next) {
                         }
                         res.send(baseApi)
                     })
-            } else {
-                const baseApi = new BaseApi(
-                    ApiStatusCodes.STATUS_OK,
-                    'Port is available'
-                )
-                baseApi.data = { isValid: true }
-                res.send(baseApi)
             }
+
+            const baseApi = new BaseApi(
+                ApiStatusCodes.STATUS_OK,
+                'Port is available'
+            )
+            baseApi.data = { isValid: true }
+            res.send(baseApi)
         })
         .catch(ApiStatusCodes.createCatcher(res))
 })
