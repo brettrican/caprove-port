@@ -6,7 +6,7 @@ Installing Captain Service ...
 For troubleshooting, please see: https://caprover.com/docs/troubleshooting.html
      
      
-[36mMarch 23rd 2026, 9:08:46.401 pm    [0m
+[36mMarch 23rd 2026, 9:09:30.060 pm    [0m
 Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
 Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
     at errorize (/Users/seanmattews/Coding/caprove-port/built/utils/Logger.js:10:16)
