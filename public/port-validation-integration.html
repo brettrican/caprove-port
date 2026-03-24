@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Validation Integration - CapRover</title>
+    
+    <!-- Bootstrap CSS (CapRover uses Bootstrap) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Port Validation CSS -->
+    <link href="/port-validation.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: 2rem;
+        }
+        
+        .integration-note {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+        
+        .feature-highlight {
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-highlight h4 {
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-highlight ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+        
+        .feature-highlight li {
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1><i class="fas fa-network-wired me-2"></i>Port Validation Integration</h1>
+            <p class="mb-0">Complete port management system for CapRover app deployment</p>
+        </div>
+        
+        <div class="demo-content">
+            <div class="integration-note">
+                <h5><i class="fas fa-info-circle me-2"></i>Integration Instructions</h5>
+                <p class="mb-0">To integrate this port validation system into CapRover, add the following to your app deployment page:</p>
+                <pre class="mt-2"><code>&lt;script src="/port-validation.js"&gt;&lt;/script&gt;
+&lt;link href="/port-validation.css" rel="stylesheet"&gt;</code></pre>
+            </div>
+            
+            <div class="feature-highlight">
+                <h4><i class="fas fa-star me-2"></i>Key Features</h4>
+                <ul>
+                    <li><strong>Real-time Port Validation</strong> - Detect conflicts before deployment</li>
+                    <li><strong>Smart Suggestions</strong> - Get AI-powered port recommendations</li>
+                    <li><strong>Visual Indicators</strong> - Clear status indicators (valid/conflict/warning)</li>
+                    <li><strong>One-click Resolution</strong> - Automatically resolve conflicts with alternatives</li>
+                    <li><strong>Responsive Design</strong> - Works on desktop, tablet, and mobile</li>
+                    <li><strong>Accessibility Support</strong> - WCAG compliant with keyboard navigation</li>
+                </ul>
+            </div>
+            
+            <div class="feature-highlight">
+                <h4><i class="fas fa-code me-2"></i>API Endpoints</h4>
+                <ul>
+                    <li><code>POST /api/v1/user/appdefinitions/validate-ports</code> - Validate ports before deployment</li>
+                    <li><code>GET /api/v1/user/ports/suggest-for-app</code> - Get port suggestions for new apps</li>
+                    <li><code>GET /api/v1/user/ports/scan</code> - Scan current port usage</li>
+                    <li><code>POST /api/v1/user/ports/validate</code> - Validate specific port</li>
+                </ul>
+            </div>
+            
+            <!-- Demo Form -->
+            <form class="app-deployment-form">
+                <h3 class="mb-4"><i class="fas fa-rocket me-2"></i>App Deployment Demo</h3>
+                
+                <div class="mb-3">
+                    <label for="appName" class="form-label">Application Name</label>
+                    <input type="text" class="form-control" id="appName" placeholder="my-awesome-app" value="demo-app">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="dockerImage" class="form-label">Docker Image</label>
+                    <input type="text" class="form-control" id="dockerImage" placeholder="nginx:latest" value="nginx:latest">
+                </div>
+                
+                <!-- Port validation will be injected here -->
+                
+                <div class="mb-3">
+                    <label for="envVars" class="form-label">Environment Variables (Optional)</label>
+                    <textarea class="form-control" id="envVars" rows="3" placeholder="NODE_ENV=production&#10;PORT=3000"></textarea>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-rocket me-2"></i>Deploy Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Port Validation Component -->
+    <script src="/port-validation.js"></script>
+    
+    <script>
+        // Demo form submission handler
+        document.querySelector('.app-deployment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Deployment Ready!</strong> Port validation passed. Your app is ready for deployment.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            e.target.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

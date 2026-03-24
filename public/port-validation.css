@@ -1,0 +1,374 @@
+/**
+ * Port Validation Component Styles
+ * Modern, responsive styling for port management in CapRover
+ */
+
+.port-validation-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+
+.port-validation-section .card-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.port-validation-section .card-header h5 {
+    color: white;
+    font-weight: 600;
+    margin: 0;
+}
+
+.port-entry {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.port-entry:hover {
+    border-color: #007bff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 123, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.port-entry .input-group-text {
+    background: #f8f9fa;
+    border-color: #ced4da;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+}
+
+.port-entry .form-control,
+.port-entry .form-select {
+    border-color: #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.port-entry .form-control:focus,
+.port-entry .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#validate-ports-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#validate-ports-btn:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 0.125rem 0.25rem rgba(40, 167, 69, 0.3);
+}
+
+#add-port-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#add-port-btn:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 0.125rem 0.25rem rgba(108, 117, 125, 0.3);
+}
+
+.remove-port {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    color: white;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-port:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: scale(1.05);
+}
+
+/* Validation Results Styling */
+#port-validation-results .alert {
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+#port-validation-results .alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+#port-validation-results .alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+#port-validation-results .alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+#port-validation-results .alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Port Suggestions Styling */
+#port-suggestions .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#port-suggestions .card-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.suggested-port {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.suggested-port:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 0.25rem 0.5rem rgba(33, 150, 243, 0.2);
+}
+
+.suggested-port h6 {
+    color: #1976d2;
+    font-weight: 600;
+    margin: 0;
+}
+
+.suggested-port .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Loading Animation */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+}
+
+/* Conflict Resolution Buttons */
+.resolve-conflict {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.resolve-conflict:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    transform: translateY(-1px);
+}
+
+.use-alternative {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.use-alternative:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .port-entry {
+        padding: 0.5rem;
+    }
+    
+    .port-entry .col-md-4,
+    .port-entry .col-md-3,
+    .port-entry .col-md-1 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .port-entry .input-group-text {
+        min-width: 60px;
+        font-size: 0.875rem;
+    }
+    
+    #port-suggestions .col-md-4 {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .port-validation-section .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+    
+    .port-entry .row {
+        flex-direction: column;
+    }
+    
+    .port-entry .col-md-4,
+    .port-entry .col-md-3,
+    .port-entry .col-md-1 {
+        width: 100%;
+    }
+    
+    .port-entry .input-group {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation for port entry additions */
+.port-entry {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse animation for validation button during validation */
+.validate-ports-btn.validating {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .port-validation-section {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .port-entry {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .port-entry .input-group-text {
+        background: #4a5568;
+        border-color: #718096;
+        color: #e2e8f0;
+    }
+    
+    .port-entry .form-control,
+    .port-entry .form-select {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .suggested-port {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .suggested-port:hover {
+        background: linear-gradient(135deg, #2c5282 0%, #2a4e7c 100%);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .port-validation-section {
+        border: 2px solid #000;
+    }
+    
+    .port-entry {
+        border: 2px solid #000;
+    }
+    
+    .port-entry .form-control,
+    .port-entry .form-select {
+        border: 2px solid #000;
+    }
+    
+    .remove-port {
+        border: 2px solid #000;
+    }
+}
+
+/* Focus indicators for accessibility */
+.port-entry .form-control:focus,
+.port-entry .form-select:focus,
+.remove-port:focus,
+#validate-ports-btn:focus,
+#add-port-btn:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .port-validation-section {
+        background: white !important;
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+    
+    .remove-port,
+    #validate-ports-btn,
+    #add-port-btn {
+        display: none !important;
+    }
+    
+    #port-validation-results,
+    #port-suggestions {
+        display: none !important;
+    }
+}

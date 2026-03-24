@@ -8,6 +8,7 @@ import {
 } from '../../../../handlers/users/apps/appdefinition/AppDefinitionHandler'
 import InjectionExtractor from '../../../../injection/InjectionExtractor'
 import { AppDeployTokenConfig } from '../../../../models/AppDefinition'
+import { getPortManagerSingleton } from '../../../../user/PortManagerSingleton'
 import CaptainManager from '../../../../user/system/CaptainManager'
 import Logger from '../../../../utils/Logger'
 import Utils from '../../../../utils/Utils'
@@ -310,6 +311,90 @@ router.post('/update/', function (req, res, next) {
     )
         .then(function (result) {
             res.send(new BaseApi(ApiStatusCodes.STATUS_OK, result.message))
+        })
+        .catch(ApiStatusCodes.createCatcher(res))
+})
+
+// validate ports before deployment
+router.post('/validate-ports', function (req, res, next) {
+    const ports = req.body.ports || []
+
+    if (!Array.isArray(ports)) {
+        const response = new BaseApi(
+            ApiStatusCodes.STATUS_ERROR_GENERIC,
+            'Ports must be an array'
+        )
+        res.send(response)
+        return
+    }
+
+    const portManager = getPortManagerSingleton()
+    const conflicts: any[] = []
+    const suggestions: any[] = []
+
+    return Promise.resolve()
+        .then(function () {
+            // Check each port for conflicts
+            const portChecks = ports.map((portConfig: any) => {
+                const hostPort = portConfig.hostPort
+                const protocol = portConfig.protocol || 'tcp'
+
+                return portManager
+                    .checkPortConflict(hostPort, protocol as 'tcp' | 'udp')
+                    .then(function (conflict) {
+                        if (conflict) {
+                            return portManager
+                                .suggestAvailablePorts(5, {
+                                    start: Math.max(3000, hostPort - 50),
+                                    end: Math.min(9000, hostPort + 50),
+                                })
+                                .then(function (alternatives) {
+                                    conflicts.push({
+                                        port: hostPort,
+                                        protocol,
+                                        conflictType: conflict.conflictType,
+                                        conflictingEntity:
+                                            conflict.conflictingEntity,
+                                        severity: conflict.severity,
+                                        alternatives: alternatives.map(
+                                            (alt: any) => ({
+                                                port: alt.port,
+                                                reason: alt.reason,
+                                                confidence: alt.confidence,
+                                            })
+                                        ),
+                                    })
+                                })
+                        }
+                    })
+            })
+
+            return Promise.all(portChecks)
+        })
+        .then(function () {
+            // Get general suggestions if no ports or conflicts exist
+            if (ports.length === 0 || conflicts.length > 0) {
+                return portManager
+                    .suggestAvailablePorts(3)
+                    .then(function (generalSuggestions) {
+                        suggestions.push(...generalSuggestions)
+                    })
+            }
+        })
+        .then(function () {
+            const isValid = conflicts.length === 0
+            const baseApi = new BaseApi(
+                isValid
+                    ? ApiStatusCodes.STATUS_OK
+                    : ApiStatusCodes.STATUS_ERROR_GENERIC,
+                isValid ? 'Ports are valid' : 'Port conflicts detected'
+            )
+            baseApi.data = {
+                isValid,
+                conflicts: conflicts.length > 0 ? conflicts : undefined,
+                suggestions: suggestions.length > 0 ? suggestions : undefined,
+            }
+            res.send(baseApi)
         })
         .catch(ApiStatusCodes.createCatcher(res))
 })

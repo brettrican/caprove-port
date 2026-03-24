@@ -1,0 +1,36 @@
+Captain Starting ...
+Overriding useExistingSwarm from /tmp/captain/data/config-override.json
+Installing Captain Service ...
+     
+ Installation of CapRover is starting...     
+For troubleshooting, please see: https://caprover.com/docs/troubleshooting.html
+     
+     
+[36mMarch 23rd 2026, 9:08:46.401 pm    [0m
+Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
+Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
+    at errorize (/Users/seanmattews/Coding/caprove-port/built/utils/Logger.js:10:16)
+    at Logger.e (/Users/seanmattews/Coding/caprove-port/built/utils/Logger.js:30:21)
+    at /Users/seanmattews/Coding/caprove-port/built/docker/DockerApi.js:1372:22
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+ 
+ 
+**** WARNING!!!! System requirement check failed!  *****
+ 
+ 
+Error: connect ECONNREFUSED /var/run/docker.sock
+    at PipeConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -61,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '/var/run/docker.sock'
+}
+Pulling: nginx:1.27.2
+Installation failed.
+Error: connect ECONNREFUSED /var/run/docker.sock
+    at PipeConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -61,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '/var/run/docker.sock'
+}

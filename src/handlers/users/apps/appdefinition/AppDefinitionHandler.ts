@@ -1,10 +1,5 @@
-import DataStore from '../../../../datastore/DataStore'
-import { ICaptainDefinition } from '../../../../models/ICaptainDefinition'
-import ServiceManager from '../../../../user/ServiceManager'
-import CaptainConstants from '../../../../utils/CaptainConstants'
-import Logger from '../../../../utils/Logger'
-
 import ApiStatusCodes from '../../../../api/ApiStatusCodes'
+import DataStore from '../../../../datastore/DataStore'
 import {
     AppDeployTokenConfig,
     IAppEnvVar,
@@ -14,6 +9,11 @@ import {
     IHttpAuth,
     RepoInfo,
 } from '../../../../models/AppDefinition'
+import { ICaptainDefinition } from '../../../../models/ICaptainDefinition'
+import { getPortManagerSingleton } from '../../../../user/PortManagerSingleton'
+import ServiceManager from '../../../../user/ServiceManager'
+import CaptainConstants from '../../../../utils/CaptainConstants'
+import Logger from '../../../../utils/Logger'
 import { BaseHandlerResult } from '../../../BaseHandlerResult'
 
 export interface RegisterAppDefinitionParams {
@@ -163,6 +163,79 @@ export interface UpdateAppDefinitionParams {
     appDeployTokenConfig?: AppDeployTokenConfig
 }
 
+export interface PortValidationResult {
+    isValid: boolean
+    conflicts?: Array<{
+        port: number
+        protocol: string
+        conflictType: string
+        conflictingEntity: string
+        severity: string
+        alternatives?: Array<{
+            port: number
+            reason: string
+            confidence: string
+        }>
+    }>
+    suggestions?: Array<{
+        port: number
+        reason: string
+        confidence: string
+    }>
+}
+
+async function validatePorts(
+    ports: IAppPort[],
+    appName?: string
+): Promise<PortValidationResult> {
+    const portManager = getPortManagerSingleton()
+    const conflicts = []
+    const suggestions = []
+
+    for (const portConfig of ports) {
+        const hostPort = portConfig.hostPort
+        const protocol = portConfig.protocol || 'tcp'
+
+        // Check for port conflicts
+        const conflict = await portManager.checkPortConflict(
+            hostPort,
+            protocol as 'tcp' | 'udp'
+        )
+        if (conflict) {
+            // Get alternative suggestions
+            const alternatives = await portManager.suggestAvailablePorts(5, {
+                start: Math.max(3000, hostPort - 50),
+                end: Math.min(9000, hostPort + 50),
+            })
+
+            conflicts.push({
+                port: hostPort,
+                protocol,
+                conflictType: conflict.conflictType,
+                conflictingEntity: conflict.conflictingEntity,
+                severity: conflict.severity,
+                alternatives: alternatives.map((alt) => ({
+                    port: alt.port,
+                    reason: alt.reason,
+                    confidence: alt.confidence,
+                })),
+            })
+        }
+    }
+
+    // If no ports specified or all have conflicts, provide suggestions
+    if (ports.length === 0 || conflicts.length > 0) {
+        const generalSuggestions = await portManager.suggestAvailablePorts(3)
+        suggestions.push(...generalSuggestions)
+    }
+
+    return {
+        isValid: conflicts.length === 0,
+        conflicts: conflicts.length > 0 ? conflicts : undefined,
+        suggestions: suggestions.length > 0 ? suggestions : undefined,
+    }
+}
+
 export async function updateAppDefinition(
     params: UpdateAppDefinitionParams,
     serviceManager: ServiceManager
@@ -218,6 +291,16 @@ export async function updateAppDefinition(
                     : ''
             }`.trim(),
         }
+    }
+
+    // Validate ports for conflicts
+    const portValidation = await validatePorts(normalizedPorts, appName)
+    if (!portValidation.isValid) {
+        Logger.w(
+            `Port conflicts detected for app ${appName}: ` +
+                JSON.stringify(portValidation.conflicts)
+        )
+        // Don't fail the deployment, but log the conflicts for frontend handling
     }
 
     const repoInfo: any = inputRepoInfo || {}
@@ -301,5 +384,8 @@ export async function updateAppDefinition(
 
     return {
         message: 'Updated App Definition Saved',
+        data: {
+            portValidation: portValidation,
+        },
     }
 }
