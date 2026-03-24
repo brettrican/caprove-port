@@ -6,31 +6,38 @@ Installing Captain Service ...
 For troubleshooting, please see: https://caprover.com/docs/troubleshooting.html
      
      
-[36mMarch 23rd 2026, 9:09:30.060 pm    [0m
-Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
-Error: Wrapped: Docker API Version Error: Error: connect ECONNREFUSED /var/run/docker.sock
-    at errorize (/Users/seanmattews/Coding/caprove-port/built/utils/Logger.js:10:16)
-    at Logger.e (/Users/seanmattews/Coding/caprove-port/built/utils/Logger.js:30:21)
-    at /Users/seanmattews/Coding/caprove-port/built/docker/DockerApi.js:1372:22
+[36mMarch 23rd 2026, 9:15:31.125 pm    [0mDocker API Version on host: 1.51
+ 
+ 
+ 
+ >>> Checking System Compatibility <<<
+   Docker Version passed.
+   Kernel version: 6.17.8-orbstack-00308-g8f9c941121b1
+   Warning: Non-generic kernel detected. CapRover compatibility may vary.
+******* Warning *******    CapRover and Docker work best on Ubuntu - specially when it comes to storage drivers.
+   Backing filesystem: btrfs
+   WARNING: extfs is recommended for best compatibility.
+   userxattr: false
+   Warning: userxattr should be false for best compatibility.
+   Total RAM 8386 MB
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::80
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at /Users/seanmattews/Coding/caprove-port/built/utils/CaptainInstaller.js:128:12
     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
- 
- 
-**** WARNING!!!! System requirement check failed!  *****
- 
- 
-Error: connect ECONNREFUSED /var/run/docker.sock
-    at PipeConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
-  errno: -61,
-  code: 'ECONNREFUSED',
-  syscall: 'connect',
-  address: '/var/run/docker.sock'
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 80
 }
-Pulling: nginx:1.27.2
-Installation failed.
-Error: connect ECONNREFUSED /var/run/docker.sock
-    at PipeConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
-  errno: -61,
-  code: 'ECONNREFUSED',
-  syscall: 'connect',
-  address: '/var/run/docker.sock'
-}
+
+Node.js v25.2.1

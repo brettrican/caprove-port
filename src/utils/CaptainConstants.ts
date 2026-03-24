@@ -109,7 +109,10 @@ const data = {
 
     defaultCaptainDefinitionPath: './captain-definition',
 
-    dockerSocketPath: '/var/run/docker.sock',
+    dockerSocketPath:
+        process.env.DOCKER_SOCKET_PATH ||
+        process.env.DOCKER_HOST?.replace('unix://', '') ||
+        '/Users/seanmattews/.orbstack/run/docker.sock',
 
     sourcePathInContainer: '/usr/src/app',
 
